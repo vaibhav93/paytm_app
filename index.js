@@ -5,6 +5,7 @@ const paytm_routes = require("./paytm");
 const dotenv = require('dotenv');
 dotenv.config();
 
+console.log("Paytm MID" + process.env.PAYTM_MID)
 app.get('/', (req, res) => {
     res.send('Hello World!')
 })
