@@ -106,6 +106,7 @@ router.post("/verify_checksum", function (req, res, next) {
   // console.log("==========================");
   var paytmParams = {};
   var paytmChecksum;
+  console.log(req.body);
   for (var key in req.body) {
     if (key == "CHECKSUMHASH") {
       paytmChecksum = req.body[key];
