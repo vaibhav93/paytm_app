@@ -127,20 +127,17 @@ router.post("/verify_checksum", function (req, res, next) {
           switch (verificationResponse.data.STATUS) {
             case "TXN_SUCCESS":
               res.redirect(
-                "/express/paytm/payment_success?access_token=" +
-                req.query["access_token"]
+                "/express/paytm/payment_success"
               );
               break;
             case "PENDING":
               res.redirect(
-                "/express/paytm/payment_pending?access_token=" +
-                req.query["access_token"]
+                "/express/paytm/payment_pending"
               );
               break;
             case "TXN_FAILURE":
               res.redirect(
-                "/express/paytm/payment_failure?access_token=" +
-                req.query["access_token"]
+                "/express/paytm/payment_failure"
               );
               break;
           }
@@ -153,7 +150,7 @@ router.post("/verify_checksum", function (req, res, next) {
   } else {
     console.log("Checksum Mismatched");
     res.redirect(
-      "/express/paytm/payment_failure?access_token=" + req.query["access_token"]
+      "/express/paytm/payment_failure"
     );
   }
 });
