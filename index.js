@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 app.use(bodyParser.urlencoded({
     extended: false
 }))
-app.use(bodyParser.json())
+
 app.use('/paytm', paytm_routes);
 
 app.listen(port, () => {

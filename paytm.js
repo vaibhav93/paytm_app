@@ -19,7 +19,6 @@ function updateOrder(orderId, data) {
   });
 }
 
-
 /* GET users listing. */
 router.get("/", function (req, res, next) {
   res.send("G2G paytm api check.");
@@ -36,6 +35,7 @@ router.get("/generate_checksum", function (req, res, next) {
     INDUSTRY_TYPE_ID: "Retail109",
     CALLBACK_URL: "http://goodtogostore.com/express/paytm/verify_checksum"
   };
+  console.log(paytmParams);
   checksum_lib.genchecksum(
     paytmParams,
     process.env.PAYTM_SECRET_KEY,
@@ -106,7 +106,6 @@ router.post("/verify_checksum", function (req, res, next) {
   // console.log("==========================");
   var paytmParams = {};
   var paytmChecksum;
-  console.log(req.body);
   for (var key in req.body) {
     if (key == "CHECKSUMHASH") {
       paytmChecksum = req.body[key];
