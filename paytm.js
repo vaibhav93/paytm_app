@@ -1,7 +1,8 @@
 const checksum_lib = require("./lib/checksum");
 const axios = require("axios");
-
+const https = require('https');
 const router = require('express').Router();
+var PaytmChecksum = require("./lib/PaytmChecksum");
 
 
 
@@ -23,6 +24,105 @@ function updateOrder(orderId, data) {
 router.get("/", function (req, res, next) {
   res.send("G2G paytm api check.");
 });
+
+router.post("/generate_txn", function(request, response, next) {
+    console.log(request.body);
+
+    var paytmParams = {};
+
+    var orderId = request.body.orderId;
+
+    var amount = request.body.amount;
+    var custId = request.body.custId;
+
+    paytmParams.body = {
+
+        /* for custom checkout value is 'Payment' and for intelligent router is 'UNI_PAY' */
+        "requestType": "Payment",
+
+        /* Find your MID in your Paytm Dashboard at https://dashboard.paytm.com/next/apikeys */
+        "mid": process.env.PAYTM_MID,
+
+        /* Find your Website Name in your Paytm Dashboard at https://dashboard.paytm.com/next/apikeys */
+        "websiteName": process.env.NODE_ENV === "production" ? "DEFAULT" : "WEBSTAGING",
+
+        "callbackUrl": process.env.NODE_ENV === "production" ? 'https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=' + orderId : 'https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID=' + orderId,
+        /* Enter your unique order id */
+        "orderId": orderId,
+
+        /* Order Transaction Amount here */
+        "txnAmount": {
+
+            /* Transaction Amount Value */
+            "value": amount,
+
+            /* Transaction Amount Currency */
+            "currency": "INR",
+        },
+
+        /* Customer Infomation here */
+        "userInfo": {
+
+            /* unique id that belongs to your customer */
+            "custId": custId,
+        },
+
+    };
+
+    /**
+     * Generate checksum by parameters we have in body
+     * Find your Merchant Key in your Paytm Dashboard at https://dashboard.paytm.com/next/apikeys 
+     */
+    PaytmChecksum.generateSignature(JSON.stringify(paytmParams.body), process.env.PAYTM_SECRET_KEY).then((checksum) => {
+      
+      paytmParams.head = {
+        "signature"    : checksum
+      };
+
+      console.log("-------REQUEST------")
+      console.log(paytmParams);
+
+      var post_data = JSON.stringify(paytmParams);
+
+      var options = {
+
+        hostname: process.env.NODE_ENV === 'production'? 'securegw.paytm.in': 'securegw-stage.paytm.in',
+
+        port: 443,
+        path: `/theia/api/v1/initiateTransaction?mid=${process.env.PAYTM_MID}&orderId=${orderId}`,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': post_data.length
+        }
+      };
+
+      var apiResponse = "";
+      var post_req = https.request(options, function(post_res) {
+          post_res.on('data', function (chunk) {
+            apiResponse += chunk;
+          });
+
+          post_res.on('end', function(){
+              console.log('Response: ', apiResponse);
+              apiResponse = JSON.parse(apiResponse);
+              response.send(apiResponse.body.txnToken);
+              return 0;
+          });
+      });
+
+      post_req.write(post_data);
+      post_req.end();
+
+      
+    })
+})
+
+
+/*---------------------------------------
+Generate checksum
+--------------------------------------*/
+
 router.get("/generate_checksum", function (req, res, next) {
   const paytmParams = {
     MID: process.env.PAYTM_MID,

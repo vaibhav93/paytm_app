@@ -6,7 +6,14 @@ const dotenv = require('dotenv');
 var bodyParser = require('body-parser')
 dotenv.config();
 
-console.log("Paytm MID" + process.env.PAYTM_MID)
+if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = 'development';
+}
+
+console.log("Running in mode: " + process.env.NODE_ENV)
+console.log("Paytm MID: " + process.env.PAYTM_MID)
+
+app.use(express.json());
 app.get('/', (req, res) => {
     res.send('Hello World!')
 })
